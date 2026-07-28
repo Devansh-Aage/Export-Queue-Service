@@ -8,6 +8,8 @@ const envSchema = z.object({
   HOST: z.string().default("0.0.0.0"),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1).default("redis://localhost:6379"),
+  JWT_SECRET: z.string().min(1),
+  JWT_EXPIRES_IN: z.string().default("7d"),
 });
 
 export type Env = z.infer<typeof envSchema>;
