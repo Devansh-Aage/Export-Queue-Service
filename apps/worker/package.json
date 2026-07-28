@@ -1,0 +1,26 @@
+{
+  "name": "@repo/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "dev": "tsx watch --env-file=../../.env src/index.ts",
+    "start": "node --env-file=../../.env dist/index.js",
+    "lint": "eslint . --max-warnings 0"
+  },
+  "dependencies": {
+    "@repo/prisma": "workspace:*",
+    "@repo/queue": "workspace:*",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.39.1",
+    "tsx": "^4.20.3",
+    "typescript": "5.9.2"
+  }
+}

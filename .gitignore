@@ -1,5 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
+.vscode
 # Dependencies
 node_modules
 .pnp
@@ -20,13 +19,14 @@ coverage
 
 # Vercel
 .vercel
-
 # Build Outputs
 .next/
 out/
 build
 dist
 
+# Prisma
+packages/prisma/src/generated
 
 # Debug
 npm-debug.log*

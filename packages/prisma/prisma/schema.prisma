@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id       String   @id @default(uuid()) @db.Uuid
+  email    String   @unique
+  password String
+  exports  Export[]
+
+  @@map("users")
+}
+
+model Dataset {
+  id      String   @id @default(uuid()) @db.Uuid
+  name    String
+  /// Relative path under storage/dataset
+  path    String
+  exports Export[]
+
+  @@map("datasets")
+}
+
+model Export {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @db.Uuid
+  datasetId String       @db.Uuid
+  status    ExportStatus @default(PENDING)
+  path      String?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dataset Dataset @relation(fields: [datasetId], references: [id], onDelete: Restrict)
+
+  @@map("exports")
+}
