@@ -1,4 +1,5 @@
 .vscode
+outputs
 # Dependencies
 node_modules
 .pnp

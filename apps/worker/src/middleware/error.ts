@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { ZodError, type ZodSchema } from "zod";
+import { ZodError } from "zod";
 
 export class AppError extends Error {
   readonly statusCode: number;
@@ -11,17 +11,6 @@ export class AppError extends Error {
     this.statusCode = statusCode;
     this.details = details;
   }
-}
-
-export function validateBody<T>(schema: ZodSchema<T>) {
-  return (req: Request, _res: Response, next: NextFunction): void => {
-    try {
-      req.body = schema.parse(req.body);
-      next();
-    } catch (error) {
-      next(error);
-    }
-  };
 }
 
 export function notFoundHandler(
@@ -39,6 +28,7 @@ export function errorHandler(
   _next: NextFunction,
 ): void {
   void _next;
+
   if (err instanceof ZodError) {
     res.status(400).json({
       error: "Validation failed",

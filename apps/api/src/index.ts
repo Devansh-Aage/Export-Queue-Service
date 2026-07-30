@@ -2,6 +2,7 @@ import { prisma } from "@repo/prisma";
 
 import { createApp } from "./app.js";
 import { loadEnv } from "./env.js";
+import { redis } from "./lib/redis.js";
 
 const SHUTDOWN_TIMEOUT_MS = 5_000;
 
@@ -41,6 +42,7 @@ async function shutdown(reason: string, error: unknown): Promise<void> {
       });
     });
 
+    await redis.quit();
     await prisma.$disconnect();
     console.error("[fatal] graceful shutdown complete");
     process.exit(1);
