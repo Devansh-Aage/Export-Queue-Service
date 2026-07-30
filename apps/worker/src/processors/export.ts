@@ -49,6 +49,15 @@ export const processExportJob = async (exportId: string) => {
       archive.finalize(), //producer: puts files in the consumer which is pipe
     ]);
 
+    await prisma.export.update({
+      where: {
+        id: exportId,
+      },
+      data: {
+        status: "COMPLETED",
+        path: outputPath,
+      },
+    });
     console.log(`Export created: ${outputPath}`);
   } catch (error) {
     console.error(`Error processing job with id:${exportId}`, error);
