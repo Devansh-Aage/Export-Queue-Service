@@ -1,5 +1,5 @@
 {
-  "name": "@repo/queue",
+  "name": "@repo/redis",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -17,6 +17,11 @@
     "lint": "eslint . --max-warnings 0"
   },
   "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ioredis": "^5.11.1"
+  },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
@@ -24,7 +29,5 @@
     "eslint": "^9.39.1",
     "tsx": "^4.23.1",
     "typescript": "5.9.2"
-  },
-  "author": "",
-  "license": "ISC"
+  }
 }

@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 import { verifyToken } from "../lib/auth.js";
 import { AppError } from "./error.js";
 
-export function createAuthMiddleware(jwtSecret: string) {
+export function authMiddleware(jwtSecret: string) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
       const header = req.headers.authorization;

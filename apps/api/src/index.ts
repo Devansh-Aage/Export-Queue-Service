@@ -9,7 +9,7 @@ const env = loadEnv();
 const app = createApp(env);
 
 const server = app.listen(env.PORT, env.HOST, () => {
-  console.log(`API listening on http://${env.HOST}:${env.PORT}/health`);
+  console.log(`Check health on http://${env.HOST}:${env.PORT}/health`);
 });
 
 let shuttingDown = false;

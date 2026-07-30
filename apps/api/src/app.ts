@@ -7,6 +7,7 @@ import morgan from "morgan";
 import type { Env } from "./env.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { createAuthRouter } from "./routes/auth.js";
+import { createExportRouter } from "./routes/export.js";
 import { healthRouter } from "./routes/health.js";
 
 export function createApp(env: Env): Express {
@@ -26,6 +27,7 @@ export function createApp(env: Env): Express {
 
   app.use("/health", healthRouter);
   app.use("/auth", createAuthRouter(env));
+  app.use("/export", createExportRouter(env));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
