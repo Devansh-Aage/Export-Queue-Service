@@ -3,6 +3,7 @@ import { getDatasetPath, getOutputPath } from "../lib/utils.js";
 import { ZipArchive } from "archiver";
 import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
+import { UnrecoverableError } from "bullmq";
 
 export const processExportJob = async (exportId: string) => {
   try {
@@ -13,7 +14,7 @@ export const processExportJob = async (exportId: string) => {
     });
     if (!exportObj) {
       console.error("Invalid export ID: ", exportId);
-      throw Error("No Export Object Found");
+      throw new UnrecoverableError("No Export Object Found");
     }
 
     await prisma.export.update({
@@ -31,7 +32,7 @@ export const processExportJob = async (exportId: string) => {
     });
     if (!dataset) {
       console.error("Dataset Missing!");
-      throw Error("Dataset Missing!");
+      throw new UnrecoverableError("Dataset Missing!");
     }
     const datasetPath = getDatasetPath(dataset.name);
 

@@ -15,17 +15,25 @@ const server = app.listen(env.PORT, env.HOST, () => {
 
 let shuttingDown = false;
 
-async function shutdown(reason: string, error: unknown): Promise<void> {
+async function shutdown(
+  reason: string,
+  error?: unknown,
+  exitCode = 1,
+): Promise<void> {
   if (shuttingDown) {
     return;
   }
   shuttingDown = true;
 
-  console.error(`[fatal] ${reason}`, error);
+  if (error !== undefined) {
+    console.error(`[shutdown] ${reason}`, error);
+  } else {
+    console.log(`[shutdown] ${reason}`);
+  }
 
   const forceExit = setTimeout(() => {
     console.error(
-      `[fatal] shutdown timed out after ${SHUTDOWN_TIMEOUT_MS}ms, forcing exit`,
+      `[shutdown] timed out after ${SHUTDOWN_TIMEOUT_MS}ms, forcing exit`,
     );
     process.exit(1);
   }, SHUTDOWN_TIMEOUT_MS);
@@ -44,10 +52,10 @@ async function shutdown(reason: string, error: unknown): Promise<void> {
 
     await redis.quit();
     await prisma.$disconnect();
-    console.error("[fatal] graceful shutdown complete");
-    process.exit(1);
+    console.error("[shutdown] graceful shutdown complete");
+    process.exit(exitCode);
   } catch (shutdownError) {
-    console.error("[fatal] error during graceful shutdown", shutdownError);
+    console.error("[shutdown] error during graceful shutdown", shutdownError);
     process.exit(1);
   }
 }
