@@ -1,5 +1,6 @@
 .vscode
 outputs
+storage
 # Dependencies
 node_modules
 .pnp
