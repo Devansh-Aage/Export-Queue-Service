@@ -6,18 +6,13 @@ import { AppError } from "./error.js";
 export function authMiddleware(jwtSecret: string) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     try {
-      const header = req.headers.authorization;
+      const token = req.cookies?.token;
 
-      if (!header?.startsWith("Bearer ")) {
-        throw new AppError(401, "Missing or invalid Authorization header");
+      if (typeof token !== "string" || !token.trim()) {
+        throw new AppError(401, "Missing or invalid auth token");
       }
 
-      const token = header.slice("Bearer ".length).trim();
-      if (!token) {
-        throw new AppError(401, "Missing or invalid Authorization header");
-      }
-
-      req.user = verifyToken(token, jwtSecret);
+      req.user = verifyToken(token.trim(), jwtSecret);
       next();
     } catch (error) {
       if (error instanceof AppError) {

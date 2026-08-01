@@ -8,7 +8,7 @@ const envSchema = z.object({
   WORKER_HOST: z.string().default("0.0.0.0"),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1).default("redis://localhost:6379"),
-  WORKER_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  WORKER_CONCURRENCY: z.coerce.number().int().positive().default(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

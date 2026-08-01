@@ -5,10 +5,12 @@ import { loadEnv } from "./env.js";
 import { createExportWorker } from "./lib/worker.js";
 import { jobDurationMs, workerMetrics } from "./lib/metrics.js";
 import redis from "./lib/redis.js";
+import { getProcessorPath } from "./lib/utils.js";
 
 const SHUTDOWN_TIMEOUT_MS = 5_000;
 
 const env = loadEnv();
+const processorFile = getProcessorPath();
 const worker = createExportWorker(env);
 workerMetrics.setMaxConcurrency(env.WORKER_CONCURRENCY);
 await worker.waitUntilReady();
@@ -26,11 +28,7 @@ worker.on("active", () => {
 });
 
 worker.on("completed", (job) => {
-  workerMetrics.recordJob(
-    "completed",
-    jobDurationMs(job),
-    job.attemptsMade,
-  );
+  workerMetrics.recordJob("completed", jobDurationMs(job), job.attemptsMade);
 
   console.log({
     event: "job completed",

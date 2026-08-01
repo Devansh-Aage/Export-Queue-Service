@@ -4,13 +4,17 @@ import { ExportJobData, queueName } from "@repo/queue";
 import redis from "./redis.js";
 import { Env } from "../env.js";
 
-export function createExportWorker(env: Env): Worker<ExportJobData> {
+export function createExportWorker(
+  env: Env,
+  processorFile?: string,
+): Worker<ExportJobData> {
   return new Worker<ExportJobData>(
     queueName,
     async (job) => {
       await processExportJob(job.data.exportId);
     },
     {
+      // useWorkerThreads: true,
       connection: redis,
       concurrency: env.WORKER_CONCURRENCY,
       //can pickup atmost 3 jobs per second
