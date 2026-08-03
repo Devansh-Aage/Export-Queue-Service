@@ -25,6 +25,15 @@ export async function createExport(
 
     const { datasetId } = req.body as CreateExportBody;
 
+    const datasetExists = await prisma.dataset.findUnique({
+      where: {
+        id: datasetId,
+      },
+    });
+    if (!datasetExists) {
+      throw new AppError(400, "Invalid Dataset ID");
+    }
+
     const exportObj = await prisma.export.create({
       data: {
         datasetId,
