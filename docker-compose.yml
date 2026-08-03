@@ -9,11 +9,21 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d export_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build: .
@@ -26,8 +36,10 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/export_service?schema=public
       REDIS_URL: redis://redis:6379
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   worker:
     build: .
@@ -43,8 +55,10 @@ services:
       - ./storage:/app/storage
       - ./outputs:/app/outputs
     depends_on:
-      - postgres
-      - redis
-
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+        
 volumes:
   postgres_data:

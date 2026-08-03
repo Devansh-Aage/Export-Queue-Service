@@ -21,4 +21,7 @@ ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/export_service?s
 
 RUN pnpm build
 
+RUN chown -R node:node /app
+USER node
+
 CMD ["pnpm","--filter", "@repo/api","start"]

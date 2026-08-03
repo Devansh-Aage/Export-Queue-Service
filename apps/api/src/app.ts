@@ -9,6 +9,8 @@ import { errorHandler, notFoundHandler } from "./middleware/error.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createExportRouter } from "./routes/export.js";
 import { healthRouter } from "./routes/health.js";
+import { rateLimiter } from "./middleware/rateLimit.js";
+import { requestTimeout } from "./middleware/timeout.js";
 
 export function createApp(env: Env): Express {
   const app = express();
@@ -24,6 +26,8 @@ export function createApp(env: Env): Express {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
+  app.use(requestTimeout(15000));
+  app.use(rateLimiter({ windowSec: 2, limit: 50 }));
 
   app.use("/health", healthRouter);
   app.use("/auth", createAuthRouter(env));

@@ -34,6 +34,23 @@ export async function createExport(
       throw new AppError(400, "Invalid Dataset ID");
     }
 
+    const exportExists = await prisma.export.findFirst({
+      where: {
+        userId: req.user.id,
+        datasetId,
+        status: {
+          not: "FAILED",
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (exportExists) {
+      throw new AppError(400, "Export Request already exists!");
+    }
+
     const exportObj = await prisma.export.create({
       data: {
         datasetId,
