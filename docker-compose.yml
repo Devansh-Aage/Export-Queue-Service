@@ -26,6 +26,7 @@ services:
       retries: 10
 
   api:
+    image: export-service-api:v1
     build: .
     command: pnpm --filter @repo/api start
     ports:
@@ -42,6 +43,7 @@ services:
         condition: service_healthy
 
   worker:
+    image: export-service-worker:v1
     build: .
     command: pnpm --filter @repo/worker start
     ports:
@@ -59,6 +61,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-        
+
 volumes:
   postgres_data:
