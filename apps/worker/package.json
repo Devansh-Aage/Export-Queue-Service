@@ -8,7 +8,8 @@
     "check-types": "tsc --noEmit",
     "dev": "tsx watch --env-file=../../.env src/index.ts",
     "start": "node dist/index.js",
-    "test": "vitest run",
+    "test:unit": "vitest run src/lib/utils.test.ts",
+    "test:integration": "node --env-file=../../.env ./node_modules/vitest/vitest.mjs run src/lib/jobEventHandler.test.ts",
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {

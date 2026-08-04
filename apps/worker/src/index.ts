@@ -6,6 +6,7 @@ import { createExportWorker } from "./lib/worker.js";
 import { jobDurationMs, workerMetrics } from "./lib/metrics.js";
 import redis from "./lib/redis.js";
 import { getProcessorPath } from "./lib/utils.js";
+import { handleJobFailed } from "./lib/jobEventHandler.js";
 
 const SHUTDOWN_TIMEOUT_MS = 5_000;
 
@@ -38,39 +39,9 @@ worker.on("completed", (job) => {
   });
 });
 
-worker.on("failed", async (job, err) => {
-  const attempts = job?.opts.attempts ?? 1;
-  const isFinal = (job?.attemptsMade ?? 0) >= attempts;
-
-  // Always release concurrency slot; only count final failures in success rate
-  if (job) {
-    if (isFinal) {
-      workerMetrics.recordJob("failed", jobDurationMs(job), job.attemptsMade);
-    } else {
-      workerMetrics.jobFinished();
-    }
-  }
-
-  console.error({
-    event: "job failed",
-    jobId: job?.id,
-    exportId: job?.data.exportId,
-    attemptsMade: job?.attemptsMade,
-    isFinal,
-    err: err.message,
-  });
-
-  if (isFinal && job?.data.exportId) {
-    await prisma.export.update({
-      where: {
-        id: job.data.exportId,
-      },
-      data: {
-        status: "FAILED",
-      },
-    });
-  }
-});
+worker.on("failed", (job, err) =>
+  handleJobFailed(job, err, { prisma, metrics: workerMetrics }),
+);
 
 worker.on("error", (err) => console.error({ event: "worker.error", err }));
 worker.on("stalled", (jobId) => console.warn({ event: "job.stalled", jobId }));

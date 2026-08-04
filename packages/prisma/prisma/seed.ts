@@ -35,25 +35,20 @@ async function main(): Promise<void> {
     return;
   }
 
-  for (const name of directories) {
-    const existing = await prisma.dataset.findFirst({
-      where: { path: name },
+  const existing = await prisma.dataset.findMany({
+    where: { path: { in: directories } },
+    select: { id: true, path: true },
+  });
+
+  const existingByPath = new Map(existing.map((d) => [d.path, d]));
+  const toCreate = directories.filter((name) => !existingByPath.has(name));
+
+  if (toCreate.length > 0) {
+    await prisma.dataset.createMany({
+      data: toCreate.map((name) => ({ name, path: name })),
     });
-
-    if (existing) {
-      console.log(`Skipped existing dataset: ${name} (${existing.id})`);
-      continue;
-    }
-
-    const dataset = await prisma.dataset.create({
-      data: {
-        name,
-        path: name,
-      },
-    });
-
-    console.log(`Created dataset: ${dataset.name} (${dataset.id})`);
   }
+  console.log("Created Datasets!");
 }
 
 main()
