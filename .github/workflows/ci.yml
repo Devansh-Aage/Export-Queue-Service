@@ -10,7 +10,7 @@ on:
 
 jobs:
   check:
-    runs-on: ubunutu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout
