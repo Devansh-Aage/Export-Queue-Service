@@ -1,6 +1,45 @@
 # Export Service
 
-Turborepo monorepo that exports datasets as ZIP archives. The API authenticates clients, creates export records, and enqueues BullMQ jobs; the worker zips dataset files from `storage/` into `outputs/`.
+A personal learning project: an async **dataset export** service that turns folders of files into ZIP archives without blocking the HTTP request.
+
+This repo is how I practiced building a small production-shaped backend — monorepo layout, auth, background jobs, persistence, metrics, Docker, and tests — rather than a product meant for real users.
+
+## The problem I wanted to solve
+
+Exporting a dataset (zipping many files on disk) can take seconds or longer. Doing that inside the request/response cycle would:
+
+- Tie up API workers and hurt latency for other clients
+- Make failures and retries awkward
+- Give the client no reliable way to know “still running” vs “done”
+
+I wanted a system where the API **accepts** an export quickly, a **worker** does the heavy lifting, and status lives in the database so you can observe progress.
+
+## Approach
+
+1. **Split API and worker** — Express API handles auth and enqueueing; a separate process consumes jobs and writes ZIPs.
+2. **Job queue** — BullMQ + Redis so exports are durable, concurrent (configurable), and retryable; unrecoverable cases fail cleanly.
+3. **Status in PostgreSQL** — Each export is a row: `PENDING` → `PROCESSING` → `COMPLETED` | `FAILED`, with the output path when done.
+4. **Shared packages** — Prisma, Redis, and queue types live in workspace packages so API and worker stay aligned.
+5. **Operational basics** — Health/metrics endpoints, Docker Compose for Postgres/Redis/API/worker, and unit / integration / e2e tests with Vitest.
+
+```
+Client → API (auth + create export) → Redis/BullMQ → Worker (zip files) → outputs/
+                ↓
+           PostgreSQL (export status)
+```
+
+## Tech stack
+
+| Layer | Choices |
+| --- | --- |
+| Monorepo | Turborepo + pnpm workspaces |
+| API | Express 5, Zod, JWT (httpOnly cookie), bcrypt |
+| Worker | BullMQ sandboxed processors, Archiver |
+| Data | PostgreSQL + Prisma |
+| Queue / cache | Redis + ioredis |
+| Runtime | Node.js ≥ 20, TypeScript |
+| Ops | Docker / Docker Compose |
+| Tests | Vitest, Supertest |
 
 ## Structure
 
@@ -25,6 +64,8 @@ outputs/     Generated ZIP archives (gitignored)
 - PostgreSQL
 - Redis
 
+Or use Docker Compose for Postgres, Redis, API, and worker.
+
 ## Setup
 
 ```sh
@@ -40,6 +81,14 @@ Optional: seed `Dataset` rows from folders under `storage/dataset/`:
 
 ```sh
 pnpm --filter @repo/prisma db:seed
+```
+
+Infra via Compose:
+
+```sh
+docker compose up -d postgres redis
+# or the full stack after building images
+docker compose up --build
 ```
 
 ## Develop
@@ -119,3 +168,12 @@ Production start after `pnpm build`:
 pnpm --filter @repo/api start
 pnpm --filter @repo/worker start
 ```
+
+## What I practiced here
+
+- Decoupling slow work from HTTP with a queue + worker
+- Modeling job lifecycle in a database
+- Sharing types/config across apps in a Turborepo monorepo
+- Auth with JWT cookies, validation with Zod, and basic observability (health/metrics)
+- Containerizing API and worker against shared Postgres/Redis
+- Layering unit, integration, and e2e tests around the export path

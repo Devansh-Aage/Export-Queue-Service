@@ -12,7 +12,8 @@
     "db:generate": "turbo run db:generate --filter=@repo/prisma",
     "db:migrate": "turbo run db:migrate --filter=@repo/prisma",
     "db:push": "turbo run db:push --filter=@repo/prisma",
-    "db:studio": "pnpm --filter @repo/prisma studio"
+    "db:studio": "pnpm --filter @repo/prisma studio",
+    "test:unit": "turbo run test:unit"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

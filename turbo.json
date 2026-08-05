@@ -51,6 +51,11 @@
     },
     "db:push": {
       "cache": false
+    },
+    "test:unit":{
+      "dependsOn":[
+        "^build"
+      ]
     }
   }
 }
