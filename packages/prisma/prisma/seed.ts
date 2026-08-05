@@ -47,8 +47,8 @@ async function main(): Promise<void> {
     await prisma.dataset.createMany({
       data: toCreate.map((name) => ({ name, path: name })),
     });
+    console.log("Created Datasets!");
   }
-  console.log("Created Datasets!");
 }
 
 main()

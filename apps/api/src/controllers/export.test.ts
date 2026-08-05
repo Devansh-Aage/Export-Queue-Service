@@ -63,24 +63,30 @@ describe("POST /export/create", () => {
 
     expect(res.body).toEqual({
       success: true,
-      data: { message: "Export Request Acknowledged!" },
+      data: {
+        message: "Export Request Acknowledged!",
+        exportId: expect.any(String),
+      },
     });
 
-    const row = await prisma.export.findFirst({
+    const exportId = res.body.data.exportId as string;
+
+    const row = await prisma.export.findUnique({
       where: {
-        datasetId: dataset.id,
+        id: exportId,
       },
     });
 
     expect(row).toMatchObject({
+      id: exportId,
       datasetId: dataset.id,
       status: "PENDING",
     });
     expect(row?.userId).toBeTruthy();
 
-    const job = await exportQueue.getJob(row!.id);
+    const job = await exportQueue.getJob(exportId);
     expect(job).toBeTruthy();
-    expect(job!.data).toEqual({ exportId: row!.id });
+    expect(job!.data).toEqual({ exportId });
   });
 
   it("rejects unauthenticated user", async () => {

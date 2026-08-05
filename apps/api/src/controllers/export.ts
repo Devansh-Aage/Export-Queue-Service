@@ -8,8 +8,14 @@ import { jobName } from "@repo/queue";
 import { sendSuccess } from "../lib/response.js";
 
 export const createExportBodySchema = z.object({
-  datasetId: z.string().uuid(),
+  datasetId: z.string().uuid("Must be a valid UUID"),
 });
+
+export const getExportParamSchema = z.object({
+  exportId: z.string().uuid("Must be a valid UUID"),
+});
+
+export type getExportParam = z.infer<typeof getExportParamSchema>;
 
 export type CreateExportBody = z.infer<typeof createExportBodySchema>;
 
@@ -71,7 +77,11 @@ export async function createExport(
       },
     );
 
-    sendSuccess(res, { message: "Export Request Acknowledged!" }, 201);
+    sendSuccess(
+      res,
+      { message: "Export Request Acknowledged!", exportId },
+      201,
+    );
   } catch (error) {
     next(error);
   }
@@ -159,6 +169,33 @@ export async function getMetrics(
       },
       200,
     );
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getExport(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const { exportId } = req.params as getExportParam;
+
+    if (!req.user) {
+      throw new AppError(401, "Unauthorized");
+    }
+
+    const exportObj = await prisma.export.findFirst({
+      where: {
+        id: exportId,
+        userId: req.user.id,
+      },
+    });
+    if (!exportObj) {
+      throw new AppError(400, "Export Missing!");
+    }
+    sendSuccess(res, { export: exportObj });
   } catch (error) {
     next(error);
   }

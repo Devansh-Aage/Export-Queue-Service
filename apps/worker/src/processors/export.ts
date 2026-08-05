@@ -40,6 +40,7 @@ export const processExportJob = async (exportId: string) => {
       zlib: { level: 9 },
     });
 
+    const outputFilename = `${exportId}.zip`;
     const outputPath = getOutputPath(exportId);
     const output = createWriteStream(outputPath);
 
@@ -56,7 +57,7 @@ export const processExportJob = async (exportId: string) => {
       },
       data: {
         status: "COMPLETED",
-        path: outputPath,
+        path: outputFilename,
       },
     });
     console.log(`Export created: ${outputPath}`);
