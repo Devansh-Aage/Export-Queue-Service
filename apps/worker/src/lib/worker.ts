@@ -8,6 +8,7 @@ export function createExportWorker(
   env: Env,
   processorFile?: string,
 ): Worker<ExportJobData> {
+  void processorFile;
   return new Worker<ExportJobData>(
     queueName,
     async (job) => {

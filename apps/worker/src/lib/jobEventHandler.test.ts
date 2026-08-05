@@ -92,7 +92,7 @@ describe("handleJobFailed", () => {
 
     await handleJobFailed(job, new Error("temp"), {
       prisma,
-      metrics: metrics as any,
+      metrics: metrics,
     });
 
     const updated = await prisma.export.findUnique({ where: { id: exp.id } });

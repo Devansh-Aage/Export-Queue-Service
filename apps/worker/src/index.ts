@@ -5,13 +5,13 @@ import { loadEnv } from "./env.js";
 import { createExportWorker } from "./lib/worker.js";
 import { jobDurationMs, workerMetrics } from "./lib/metrics.js";
 import redis from "./lib/redis.js";
-import { getProcessorPath } from "./lib/utils.js";
+// import { getProcessorPath } from "./lib/utils.js";
 import { handleJobFailed } from "./lib/jobEventHandler.js";
 
 const SHUTDOWN_TIMEOUT_MS = 5_000;
 
 const env = loadEnv();
-const processorFile = getProcessorPath();
+// const processorFile = getProcessorPath();
 const worker = createExportWorker(env);
 workerMetrics.setMaxConcurrency(env.WORKER_CONCURRENCY);
 await worker.waitUntilReady();

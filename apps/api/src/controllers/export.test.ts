@@ -110,7 +110,6 @@ describe("POST /export/create", () => {
   });
 
   it("rejects unknown dataset", async () => {
-    const dataset = await seedDataset();
     const agent = await registerAgent();
 
     const res = await agent
