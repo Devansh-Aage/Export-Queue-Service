@@ -20,3 +20,4 @@ export function sendSuccess<T>(
 export function sendNoContent(res: Response): void {
   res.status(204).send();
 }
+
