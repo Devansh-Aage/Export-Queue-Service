@@ -58,8 +58,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Add OpenSSL
+        run: |
+          apt-get update \
+          && apt-get install -y openssl ca-certificates curl \
+          && rm -rf /var/lib/apt/lists/*
+
       - name: Enable Corepack (pnpm)
         run: corepack enable
+
+      - name: Setup PNPM cache
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+          cache: "pnpm" 
 
       - name: Install Deps
         run: pnpm install --frozen-lockfile
@@ -78,22 +90,44 @@ jobs:
 
       - name: Write .env for tests
         run: |
-          cat > .env << EOF
-          DATABASE_URL=${DATABASE_URL}
-          REDIS_URL=${REDIS_URL}
-          JWT_SECRET=${JWT_SECRET}
-          NODE_ENV=${NODE_ENV}
-          EOF
+          echo "DATABASE_URL=${DATABASE_URL}" > .env
+          echo "REDIS_URL=${REDIS_URL}" >> .env
+          echo "JWT_SECRET=${JWT_SECRET}" >> .env
+          echo "NODE_ENV=${NODE_ENV}" >> .env
 
       - name: Prisma generate + push
         run: |
           pnpm db:generate
           pnpm db:push
 
+      - name: Fixture for Seeding
+        run: |
+          mkdir -p storage/dataset/e2e_sample
+          echo "hello" > storage/dataset/e2e_sample/sample.txt
+
+      - name: Seed Dataset
+        run: pnpm --filter @repo/prisma db:seed
+
       - name: Integration tests
         run: |
           pnpm --filter @repo/api test:integration
           pnpm --filter @repo/worker test:integration
+
+      - name: Start Api and Worker Server
+        run: |
+          pnpm --filter @repo/api start &
+          pnpm --filter @repo/worker start &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/health; then
+              exit 0
+            fi
+              sleep 1
+          done
+          echo "API failed to become healthy"
+          exit 1
+
+      - name: E2E test
+        run: pnpm --filter @repo/api test:e2e
 
       - name: Cleanup workspace
         if: always()

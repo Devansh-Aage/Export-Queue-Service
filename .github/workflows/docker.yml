@@ -3,12 +3,11 @@ name: Docker
 on:
   push:
     branches: [main]
-  workflow_dispatch: # manual run from Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: self-hosted
-    # no job container — need the host Docker daemon
     steps:
       - name: Checkout
         uses: actions/checkout@v5

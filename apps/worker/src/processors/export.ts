@@ -34,6 +34,7 @@ export const processExportJob = async (exportId: string) => {
       console.error("Dataset Missing!");
       throw new UnrecoverableError("Dataset Missing!");
     }
+    
     const datasetPath = getDatasetPath(dataset.name);
 
     const archive = new ZipArchive({

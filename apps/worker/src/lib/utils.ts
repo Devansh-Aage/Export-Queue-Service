@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -17,9 +18,9 @@ export const getDatasetPath = (datasetName: string) => {
 
 export const getOutputPath = (exportId: string) => {
   const rootDir = getRootDir();
-  const outputPath = path.join(rootDir, "outputs", `${exportId}.zip`);
-
-  return outputPath;
+  const outputsDir = path.join(rootDir, "outputs");
+  mkdirSync(outputsDir, { recursive: true });
+  return path.join(outputsDir, `${exportId}.zip`);
 };
 
 export const getProcessorPath = () => {
