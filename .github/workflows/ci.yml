@@ -18,7 +18,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       JWT_SECRET: ${{secrets.JWT_SECRET}}
 
-      REDIS_URL: "redis://localhost:6379"
+      REDIS_URL: "redis://redis:6379"
       NODE_ENV: development
       HOST: 0.0.0.0
       PORT: 3000
@@ -29,6 +29,30 @@ jobs:
       WORKER_CONCURRENCY: 1
       
       E2E_API_URL: http://localhost:3000
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: export_service
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d export_service"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis: 
+        image: redis:7-alpine
+        ports: 
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-retries 10          
 
     steps:
       - name: Checkout
@@ -52,7 +76,27 @@ jobs:
       - name: Unit Tests
         run: pnpm test:unit
 
+      - name: Write .env for tests 
+        run: |
+          cat > .env << EOF
+          DATABASE_URL=${DATABASE_URL}
+          REDIS_URL=${REDIS_URL}
+          JWT_SECRET=${JWT_SECRET}
+          NODE_ENV=${NODE_ENV}
+          EOF
+
+      - name: Prisma generate + push
+        run: |
+          pnpm db:generate
+          pnpm db:push  
+
+      - name: Integration tests
+        run: |
+          pnpm --filter @repo/api test:integration
+          pnpm --filter @repo/worker test:integration
+
       - name: Cleanup workspace
         if: always()
         run:  |
           find . -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
