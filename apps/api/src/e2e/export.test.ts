@@ -58,9 +58,7 @@ describe("e2e: export happy path", () => {
 
       await agent.post("/auth/register").send({ email, password }).expect(204);
 
-      const dataset = await prisma.dataset.findFirst({
-        orderBy: { name: "asc" },
-      });
+      const dataset = await prisma.dataset.findFirst();
       expect(dataset).toBeTruthy();
 
       const createRes = await agent
