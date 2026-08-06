@@ -1,0 +1,20 @@
+name: Docker
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # manual run from Actions tab
+
+jobs:
+  build:
+    runs-on: self-hosted
+    # no job container — need the host Docker daemon
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Build image
+        run: |
+          docker build \
+            -t export-service-api:ci-${{ github.sha }} \
+            .
