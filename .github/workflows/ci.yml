@@ -100,6 +100,11 @@ jobs:
           pnpm db:generate
           pnpm db:push
 
+      - name: Integration tests
+        run: |
+          pnpm --filter @repo/api test:integration
+          pnpm --filter @repo/worker test:integration
+
       - name: Fixture for Seeding
         run: |
           mkdir -p storage/dataset/e2e_sample
@@ -107,11 +112,6 @@ jobs:
 
       - name: Seed Dataset
         run: pnpm --filter @repo/prisma db:seed
-
-      - name: Integration tests
-        run: |
-          pnpm --filter @repo/api test:integration
-          pnpm --filter @repo/worker test:integration
 
       - name: Start Api and Worker Server
         run: |
