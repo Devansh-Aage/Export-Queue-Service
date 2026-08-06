@@ -5,15 +5,29 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/export-service-api
+
 jobs:
-  build:
+  build-and-push:
     runs-on: self-hosted
+
+    permissions:
+      contents: read  
+      packages: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Build image
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push
         run: |
           docker build \
-            -t export-service-api:ci-${{ github.sha }} \
+            -t ${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            -t ${{ env.IMAGE_NAME }}:latest \
             .
+          docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.IMAGE_NAME }}:latest
