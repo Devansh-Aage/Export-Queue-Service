@@ -12,7 +12,7 @@ jobs:
   check:
     runs-on: self-hosted
     container:
-      image: node:20-bookworm-slim
+      image: node:24-bookworm-slim
 
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}

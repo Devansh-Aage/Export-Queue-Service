@@ -3,7 +3,7 @@ name: Docker
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+  workflow_dispatch: # can run workflow using Github UI
 
 env:
   ECR_REPOSITORY: learning/export-service-api
@@ -13,7 +13,7 @@ jobs:
     runs-on: self-hosted
 
     permissions:
-      contents: read
+      contents: read #read the repo
 
     steps:
       - name: Checkout
