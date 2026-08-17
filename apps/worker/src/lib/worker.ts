@@ -1,5 +1,4 @@
 import { Worker } from "bullmq";
-import { processExportJob } from "../processors/export.js";
 import { ExportJobData, queueName } from "@repo/queue";
 import redis from "./redis.js";
 import { Env } from "../env.js";

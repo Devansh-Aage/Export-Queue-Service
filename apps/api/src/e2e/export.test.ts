@@ -1,22 +1,11 @@
 import { describe, it, expect, afterAll } from "vitest";
 import request from "supertest";
 import { randomUUID } from "node:crypto";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { prisma } from "@repo/prisma";
 
 const API_URL = process.env.E2E_API_URL ?? "http://localhost:3000";
 const POLL_MS = 200;
 const TIMEOUT_MS = 70_000;
-
-const repoRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../../../",
-);
-
-function hostZipPath(filename: string) {
-  return path.join(repoRoot, "outputs", filename);
-}
 
 async function waitForExportCompleted(
   agent: ReturnType<typeof request.agent>,
