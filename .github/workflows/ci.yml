@@ -30,6 +30,11 @@ jobs:
 
       E2E_API_URL: http://localhost:3000
 
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      AWS_REGION: ap-south-1
+      S3_DATASET_PREFIX: storage/dataset
+      S3_OUTPUT_PREFIX: outputs
+
     services:
       postgres:
         image: postgres:16-alpine
