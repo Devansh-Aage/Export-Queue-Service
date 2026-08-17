@@ -8,21 +8,14 @@ export function createExportWorker(
   env: Env,
   processorFile?: string,
 ): Worker<ExportJobData> {
-  void processorFile;
-  return new Worker<ExportJobData>(
-    queueName,
-    async (job) => {
-      await processExportJob(job.data.exportId);
+  return new Worker<ExportJobData>(queueName, processorFile, {
+    // useWorkerThreads: true,
+    connection: redis,
+    concurrency: env.WORKER_CONCURRENCY,
+    //can pickup atmost 3 jobs per second
+    limiter: {
+      max: 3,
+      duration: 1000,
     },
-    {
-      // useWorkerThreads: true,
-      connection: redis,
-      concurrency: env.WORKER_CONCURRENCY,
-      //can pickup atmost 3 jobs per second
-      limiter: {
-        max: 3,
-        duration: 1000,
-      },
-    },
-  );
+  });
 }

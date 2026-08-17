@@ -1,9 +1,13 @@
 import { prisma } from "@repo/prisma";
-import { getDatasetPath, getOutputPath } from "../lib/utils.js";
+import { getObjectStream, listDatasetKeys } from "../lib/utils.js";
 import { ZipArchive } from "archiver";
-import { createWriteStream } from "node:fs";
-import { pipeline } from "node:stream/promises";
 import { UnrecoverableError } from "bullmq";
+import { loadEnv } from "../env.js";
+import { Upload } from "@aws-sdk/lib-storage";
+import { s3 } from "../lib/s3Client.js";
+import { PassThrough } from "node:stream";
+
+const env = loadEnv();
 
 export const processExportJob = async (exportId: string) => {
   try {
@@ -34,23 +38,45 @@ export const processExportJob = async (exportId: string) => {
       console.error("Dataset Missing!");
       throw new UnrecoverableError("Dataset Missing!");
     }
-    
-    const datasetPath = getDatasetPath(dataset.name);
+
+    const prefix = `${env.S3_DATASET_PREFIX}/${dataset.name}/`;
+    const keys = await listDatasetKeys(prefix);
+    if (keys.length === 0) {
+      throw new UnrecoverableError(
+        `No objects under s3://${env.S3_BUCKET}/${prefix}`,
+      );
+    }
+
+    const outputFilename = `${exportId}.zip`;
+    const outputKey = `${env.S3_OUTPUT_PREFIX}/${outputFilename}`;
 
     const archive = new ZipArchive({
       zlib: { level: 9 },
     });
+    const body = new PassThrough();
+    archive.on("error", (err) => body.destroy(err));
+    archive.pipe(body);
 
-    const outputFilename = `${exportId}.zip`;
-    const outputPath = getOutputPath(exportId);
-    const output = createWriteStream(outputPath);
+    const upload = new Upload({
+      client: s3,
+      params: {
+        Bucket: env.S3_BUCKET,
+        Key: outputKey,
+        Body: body,
+        ContentType: "application/zip",
+      },
+    });
+    const uploadDone = upload.done();
 
-    archive.directory(datasetPath, false);
+    for (const key of keys) {
+      const name = key.slice(prefix.length);
+      if (!name) continue;
+      const body = await getObjectStream(key);
+      archive.append(body, { name });
+    }
 
-    await Promise.all([
-      pipeline(archive, output), //consumer
-      archive.finalize(), //producer: puts files in the consumer which is pipe
-    ]);
+    await archive.finalize();
+    await uploadDone;
 
     await prisma.export.update({
       where: {
@@ -61,7 +87,7 @@ export const processExportJob = async (exportId: string) => {
         path: outputFilename,
       },
     });
-    console.log(`Export created: ${outputPath}`);
+    console.log(`Export created: s3://${env.S3_BUCKET}/${outputKey}`);
   } catch (error) {
     console.error(`Error processing job with id:${exportId}`, error);
     throw error;

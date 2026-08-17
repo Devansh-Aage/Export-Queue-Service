@@ -60,6 +60,14 @@ async function shutdown(
   }
 }
 
+process.on("SIGINT", () => {
+  void shutdown("SIGINT", undefined, 0);
+});
+
+process.on("SIGTERM", () => {
+  void shutdown("SIGTERM", undefined, 0);
+});
+
 process.on("uncaughtException", (error) => {
   void shutdown("uncaughtException", error);
 });

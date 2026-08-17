@@ -1,6 +1,8 @@
 .vscode
 outputs
 storage
+*.pem
+*.csv
 # Dependencies
 node_modules
 .pnp

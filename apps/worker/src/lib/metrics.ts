@@ -10,10 +10,10 @@ export type WorkerMetricsSnapshot = {
     pid: number;
     cpuPercent: number;
     memory: {
-      rssBytes: number;
-      heapUsedBytes: number;
-      heapTotalBytes: number;
-      externalBytes: number;
+      rssMb: number;
+      heapUsedMb: number;
+      heapTotalMb: number;
+      externalMb: number;
     };
     eventLoopLagMs: {
       mean: number;
@@ -41,6 +41,10 @@ export type WorkerMetricsSnapshot = {
   };
   collectedAt: string;
 };
+
+function bytesToMb(bytes: number): number {
+  return Math.round((bytes / (1024 * 1024)) * 100) / 100;
+}
 
 function percentile(sorted: number[], p: number): number | null {
   if (sorted.length === 0) {
@@ -133,10 +137,10 @@ class WorkerMetrics {
         pid: process.pid,
         cpuPercent: this.cpuPercent(),
         memory: {
-          rssBytes: mem.rss,
-          heapUsedBytes: mem.heapUsed,
-          heapTotalBytes: mem.heapTotal,
-          externalBytes: mem.external,
+          rssMb: bytesToMb(mem.rss),
+          heapUsedMb: bytesToMb(mem.heapUsed),
+          heapTotalMb: bytesToMb(mem.heapTotal),
+          externalMb: bytesToMb(mem.external),
         },
         eventLoopLagMs: {
           mean: nsToMs(this.eventLoop.mean),

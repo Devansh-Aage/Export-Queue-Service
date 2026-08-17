@@ -9,6 +9,10 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1).default("redis://localhost:6379"),
   WORKER_CONCURRENCY: z.coerce.number().int().positive().default(1),
+  S3_BUCKET: z.string().min(1),
+  AWS_REGION: z.string().min(1).default("ap-south-1"),
+  S3_DATASET_PREFIX: z.string().default("storage/dataset"),
+  S3_OUTPUT_PREFIX: z.string().default("outputs"),
 });
 
 export type Env = z.infer<typeof envSchema>;

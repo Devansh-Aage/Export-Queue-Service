@@ -8,11 +8,12 @@
     "check-types": "tsc --noEmit",
     "dev": "tsx watch --env-file=../../.env src/index.ts",
     "start": "node dist/index.js",
-    "test:unit": "vitest run src/lib/utils.test.ts",
     "test:integration": "node --env-file=../../.env ./node_modules/vitest/vitest.mjs run src/lib/jobEventHandler.test.ts",
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1110.0",
+    "@aws-sdk/lib-storage": "^3.1110.0",
     "@repo/prisma": "workspace:*",
     "@repo/queue": "workspace:*",
     "@repo/redis": "workspace:*",
