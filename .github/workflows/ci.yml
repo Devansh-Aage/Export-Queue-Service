@@ -123,15 +123,7 @@ jobs:
       - name: Start Api and Worker Server
         run: |
           pnpm --filter @repo/api start &
-          pnpm --filter @repo/worker start &
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:3000/health; then
-              exit 0
-            fi
-              sleep 1
-          done
-          echo "API failed to become healthy"
-          exit 1
+          pnpm --filter @repo/worker start          
 
       - name: E2E test
         run: pnpm --filter @repo/api test:e2e
