@@ -120,13 +120,18 @@ jobs:
       - name: Seed Dataset
         run: pnpm --filter @repo/prisma db:seed
 
-      - name: Start Api and Worker Server
+      - name: E2E test
         run: |
           pnpm --filter @repo/api start &
-          pnpm --filter @repo/worker start          
-
-      - name: E2E test
-        run: pnpm --filter @repo/api test:e2e
+          pnpm --filter @repo/worker start &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/health; then
+              break
+            fi
+            sleep 1
+          done
+          curl -sf http://localhost:3000/health || { echo "API failed to become healthy"; exit 1; }
+          pnpm --filter @repo/api test:e2e
 
       - name: Cleanup workspace
         if: always()
