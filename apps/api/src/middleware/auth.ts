@@ -18,6 +18,7 @@ export function authMiddleware(jwtSecret: string) {
       }
 
       req.user = verifyToken(token.trim(), jwtSecret);
+      
       const userObj = await prisma.user.findFirst({
         where: {
           id: req.user.id,
@@ -26,6 +27,7 @@ export function authMiddleware(jwtSecret: string) {
       if (!userObj) {
         throw new AppError(401,"User doesn't exist!");
       }
+
       next();
     } catch (error) {
       if (error instanceof AppError) {
