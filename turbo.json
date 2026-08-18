@@ -12,7 +12,11 @@
     "WORKER_PORT",
     "WORKER_HOST",
     "WORKER_CONCURRENCY",
-    "E2E_API_URL"
+    "E2E_API_URL",
+    "AWS_REGION",
+    "S3_BUCKET",
+    "S3_DATASET_PREFIX",
+    "S3_OUTPUT_PREFIX"
   ],
   "tasks": {
     "build": {

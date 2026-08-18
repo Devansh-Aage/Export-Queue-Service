@@ -76,7 +76,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: "24"
-          cache: "pnpm" 
+          cache: "pnpm"
 
       - name: Install Deps
         run: pnpm install --frozen-lockfile
@@ -110,10 +110,12 @@ jobs:
           pnpm --filter @repo/api test:integration
           pnpm --filter @repo/worker test:integration
 
-      - name: Fixture for Seeding
-        run: |
-          mkdir -p storage/dataset/e2e_sample
-          echo "hello" > storage/dataset/e2e_sample/sample.txt
+      - name: Configure AWS Creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:     
+          aws-access-key-id: ${{ secrets.SEED_HOST_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SEED_HOST_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Seed Dataset
         run: pnpm --filter @repo/prisma db:seed

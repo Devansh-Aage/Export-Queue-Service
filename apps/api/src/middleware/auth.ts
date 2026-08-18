@@ -2,9 +2,14 @@ import type { NextFunction, Request, Response } from "express";
 
 import { verifyToken } from "../lib/auth.js";
 import { AppError } from "./error.js";
+import { prisma } from "@repo/prisma";
 
 export function authMiddleware(jwtSecret: string) {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return async (
+    req: Request,
+    _res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const token = req.cookies?.token;
 
@@ -13,6 +18,14 @@ export function authMiddleware(jwtSecret: string) {
       }
 
       req.user = verifyToken(token.trim(), jwtSecret);
+      const userObj = await prisma.user.findFirst({
+        where: {
+          id: req.user.id,
+        },
+      });
+      if (!userObj) {
+        throw new AppError(401,"User doesn't exist!");
+      }
       next();
     } catch (error) {
       if (error instanceof AppError) {

@@ -15,7 +15,13 @@ export async function handleJobFailed(
   },
 ): Promise<void> {
   const attempts = job?.opts.attempts ?? 1;
-  const isFinal = (job?.attemptsMade ?? 0) >= attempts;
+  const attemptsExhausted = (job?.attemptsMade ?? 0) >= attempts;
+
+  const stalledLimitReached =
+    /job stalled more than allowable limit/i.test(err.message) ||
+    /job stalled more than allowable limit/i.test(job?.failedReason ?? "");
+
+  const isFinal = attemptsExhausted || stalledLimitReached;
 
   // Always release concurrency slot; only count final failures in success rate
   if (job) {

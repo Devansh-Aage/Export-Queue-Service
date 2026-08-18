@@ -1,4 +1,3 @@
-import { readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -23,15 +22,26 @@ const prisma = new PrismaClient({
 });
 
 async function main(): Promise<void> {
-  const datasetRoot = path.join(rootDir, "storage", "dataset");
-  const entries = await readdir(datasetRoot, { withFileTypes: true });
-  const directories = entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  const bucket = process.env.S3_BUCKET;
+  const rawPrefix = process.env.S3_DATASET_PREFIX ?? "storage/dataset";
+
+  if (!bucket) {
+    throw new Error("S3_BUCKET is required to seed datasets from S3");
+  }
+
+  const normalizedPrefix = rawPrefix.endsWith("/") ? rawPrefix : `${rawPrefix}/`;
+  const { listDatasetFolders } = await import(
+    "../../../apps/worker/src/lib/utils.js"
+  );
+
+  const directories = (await listDatasetFolders(normalizedPrefix)).sort(
+    (a, b) => a.localeCompare(b, undefined, { numeric: true }),
+  );
 
   if (directories.length === 0) {
-    console.log(`No datasets found under ${datasetRoot}`);
+    console.log(
+      `No dataset folders found in s3://${bucket}/${normalizedPrefix}`,
+    );
     return;
   }
 

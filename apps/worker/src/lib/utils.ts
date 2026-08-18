@@ -56,6 +56,40 @@ export async function listDatasetKeys(prefix: string): Promise<string[]> {
   return keys;
 }
 
+export async function listDatasetFolders(
+  prefix: string,
+): Promise<string[]> {
+  // Uses S3 "delimiter" listing to fetch only top-level "folders"
+  // under the provided prefix (no need to enumerate every object key).
+  const folders = new Set<string>();
+  let continuationToken: string | undefined;
+
+  do {
+    const page = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: env.S3_BUCKET,
+        Prefix: prefix,
+        Delimiter: "/",
+        ContinuationToken: continuationToken,
+      }),
+    );
+
+    for (const item of page.CommonPrefixes ?? []) {
+      const folderPrefix = item.Prefix;
+      if (!folderPrefix) continue;
+
+      const relative = folderPrefix.slice(prefix.length).replace(/\/$/, "");
+      if (relative.length > 0) folders.add(relative);
+    }
+
+    continuationToken = page.IsTruncated
+      ? page.NextContinuationToken
+      : undefined;
+  } while (continuationToken);
+
+  return Array.from(folders);
+}
+
 export async function getObjectStream(key: string): Promise<Readable> {
   const { Body } = await s3.send(
     new GetObjectCommand({

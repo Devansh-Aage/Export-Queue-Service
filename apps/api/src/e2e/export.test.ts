@@ -5,7 +5,7 @@ import { prisma } from "@repo/prisma";
 
 const API_URL = process.env.E2E_API_URL ?? "http://localhost:3000";
 const POLL_MS = 200;
-const TIMEOUT_MS = 70_000;
+const TIMEOUT_MS = 190_000;
 
 async function waitForExportCompleted(
   agent: ReturnType<typeof request.agent>,
